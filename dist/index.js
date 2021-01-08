@@ -7,6 +7,7 @@ module.exports =
 
 const core = __nccwpck_require__(24);
 const github = __nccwpck_require__(16);
+const { HttpClient } = __nccwpck_require__(628);
 
 async function existingCommentsFrom(octokit, owner, repo, prNumber, userLogin) {
   const res = await octokit.pulls.listReviewComments({
@@ -49,19 +50,24 @@ async function execute() {
   }
 
   const [owner, repo] = repository.full_name.split('/')
-  const commitSha = pullRequest.head.sha
 
+  let commitSha
   let prNumber
 
   if (pullRequest && pullRequest.number) {
     prNumber = pullRequest.number
+    commitSha = pullRequest.head.sha
   } else {
     // If this is not a pull request, attempt to find a PR matching the sha
     const commitPullsList = await listCommitPulls({ repoToken, owner, repo, commitSha })
-    prNumber = commitPullsList && commitPullsList.length && commitPullsList[0].number
+    if (commitPullsList && commitPullsList.length) {
+      core.info(`found associated pr ${commitPullsList[0].number} ` + JSON.stringify(commitPullsList))
+      prNumber =  commitPullsList[0].number
+      commitSha = commitPullsList[0].head.sha
+    }
   }
 
-  if (!prNumber) {
+  if (!prNumber || !commitSha) {
     core.info('this action only works on pull_request events or other commits associated with a pull')
     setOutputs(commentsCreated)
     return
@@ -88,6 +94,8 @@ async function execute() {
       })
 
       core.debug(`created ${res.data.url}`)
+    } else {
+      core.info(`skip commenting since comment already exists`)
     }
 
     commentsCreated.push(shouldCreateComment)
