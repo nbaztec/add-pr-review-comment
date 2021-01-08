@@ -41,6 +41,7 @@ async function execute() {
 
   const {
     payload: { pull_request: pullRequest, repository },
+    sha
   } = github.context
 
   if (!repository) {
@@ -59,7 +60,7 @@ async function execute() {
     commitSha = pullRequest.head.sha
   } else {
     // If this is not a pull request, attempt to find a PR matching the sha
-    const commitPullsList = await listCommitPulls({ repoToken, owner, repo, commitSha })
+    const commitPullsList = await listCommitPulls({ repoToken, owner, repo, sha })
     if (commitPullsList && commitPullsList.length) {
       core.info(`found associated pr ${commitPullsList[0].number} ` + JSON.stringify(commitPullsList))
       prNumber =  commitPullsList[0].number
