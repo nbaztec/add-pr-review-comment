@@ -1,10 +1,11 @@
 {
   "name": "@nbaztec/add-pr-review-comment",
-  "version": "1.0.6",
+  "version": "1.0.",
   "description": "A GitHub Action to add comments to a Pull Request Review.",
   "main": "lib/index.js",
   "scripts": {
-    "build": "ncc build lib/index.js"
+    "build": "ncc build lib/index.js",
+    "tag": "git tag -d v1 && git tag v1 && git push -f origin v1 "
   },
   "dependencies": {
     "@actions/core": "1.2.6",
