@@ -7,7 +7,7 @@ module.exports =
 
 const core = __nccwpck_require__(24);
 const github = __nccwpck_require__(16);
-const { HttpClient } = __nccwpck_require__(628);
+
 
 async function existingCommentsFrom(octokit, owner, repo, prNumber, userLogin) {
   const res = await octokit.pulls.listReviewComments({
@@ -27,6 +27,26 @@ async function existingCommentsFrom(octokit, owner, repo, prNumber, userLogin) {
   }, new Set())
 
   return userComments
+}
+
+function getInputs() {
+  return {
+    allowRepeats: core.getInput('allow-repeats') === 'true',
+    comments: JSON.parse(core.getInput('comments') || '[]'),
+    repoToken: core.getInput('repo-token') || process.env['GITHUB_TOKEN'],
+    repoTokenUserLogin: core.getInput('repo-token-user-login') || 'github-actions[bot]',
+  }
+}
+
+const regexClean = RegExp('[\\R\\s\\n\\r]', 'g')
+function commentKey(path, line, user, text) {
+  return `${path}:${line}:${user}:${text.replace(regexClean, '')}`
+}
+
+function setOutputs(createdComments) {
+  core.setOutput('comments-created-all', createdComments.every(x => x))
+  core.setOutput('comments-created-some', createdComments.some(x => x))
+  core.setOutput('comments-created-list', JSON.stringify(createdComments))
 }
 
 async function execute() {
@@ -59,17 +79,7 @@ async function execute() {
     prNumber = pullRequest.number
     commitSha = pullRequest.head.sha
   } else {
-    // If this is not a pull request, attempt to find a PR matching the sha
-    const commitPullsList = await listCommitPulls({ repoToken, owner, repo, sha })
-    if (commitPullsList && commitPullsList.length) {
-      core.info(`found associated pr ${commitPullsList[0].number} ` + JSON.stringify(commitPullsList))
-      prNumber =  commitPullsList[0].number
-      commitSha = commitPullsList[0].head.sha
-    }
-  }
-
-  if (!prNumber || !commitSha) {
-    core.info('this action only works on pull_request events or other commits associated with a pull')
+    core.info('this action only works on pull_request events')
     setOutputs(commentsCreated)
     return
   }
@@ -103,42 +113,6 @@ async function execute() {
   }
 
   setOutputs(commentsCreated)
-}
-
-function getInputs() {
-  return {
-    allowRepeats: core.getInput('allow-repeats') === 'true',
-    comments: JSON.parse(core.getInput('comments') || '[]'),
-    repoToken: core.getInput('repo-token') || process.env['GITHUB_TOKEN'],
-    repoTokenUserLogin: core.getInput('repo-token-user-login') || 'github-actions[bot]',
-  }
-}
-
-const regexClean = RegExp('[\\R\\s\\n\\r]', 'g')
-function commentKey(path, line, user, text) {
-  return `${path}:${line}:${user}:${text.replace(regexClean, '')}`
-}
-
-async function listCommitPulls(repoToken, owner, repo, commitSha) {
-  const http = new HttpClient('http-client-add-pr-review-comment')
-
-  const additionalHeaders = {
-    accept: 'application/vnd.github.groot-preview+json',
-    authorization: `token ${repoToken}`,
-  }
-
-  const res = await http.getJson(
-    `https://api.github.com/repos/${owner}/${repo}/commits/${commitSha}/pulls`,
-    additionalHeaders
-  )
-
-  return res.result
-}
-
-function setOutputs(createdComments) {
-  core.setOutput('comments-created-all', createdComments.every(x => x))
-  core.setOutput('comments-created-some', createdComments.some(x => x))
-  core.setOutput('comments-created-list', JSON.stringify(createdComments))
 }
 
 execute().catch((err) => {
