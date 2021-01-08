@@ -1,0 +1,29 @@
+name: "Add PR Review Comment"
+description: "Add review comments to a pull request"
+inputs:
+  comments:
+    description: 'JSON list of messages to comment or pr reviews, eg: [{"path": "lib/main.js", "line": 10, "side": "RIGHT"}]'
+    required: true
+  repo-token:
+    description: "A GitHub token for API access."
+    required: false
+  repo-token-user-login:
+    description: "A user login associated with your token, for temporary repo tokens this is `github-actions[bot]`."
+    required: false
+  allow-repeats:
+    description: "Allow messages to be repeated."
+    required: false
+    default: "false"
+outputs:
+  comments-created-all:
+    description: "If all comments were created, eg: true/false"
+  comments-created-some:
+    description: "If some comments were created, eg: true/false"
+  comments-created-list:
+    description: "JSON list of created comments, eg: [true,false,false]"
+branding:
+  icon: message-circle
+  color: gray-dark
+runs:
+  using: "node12"
+  main: "lib/index.js"
