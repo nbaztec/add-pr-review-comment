@@ -1,6 +1,6 @@
 {
   "name": "@nbaztec/add-pr-review-comment",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "A GitHub Action to add comments to a Pull Request Review.",
   "main": "lib/main.js",
   "dependencies": {
