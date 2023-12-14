@@ -99,7 +99,9 @@ async function execute() {
         commit_id: commitSha,
         path: c.path,
         line: c.line,
+        start_line: c.start_line || c.line,
         side: c.side || 'RIGHT',
+        start_side: c.start_side || 'RIGHT',
       })
 
       core.debug(`created ${res.data.url}`)
