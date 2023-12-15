@@ -2,7 +2,7 @@ name: "Add PR Review Comment"
 description: "Add review comments to a pull request"
 inputs:
   comments:
-    description: 'JSON list of messages to comment or pr reviews, eg: [{"path": "lib/main.js", "line": 10, "side": "RIGHT"}]'
+    description: 'JSON list of messages to comment or pr reviews, eg: [{"path": "lib/main.js", "line": 10, "start_line": 9, "side": "RIGHT"}]'
     required: true
   repo-token:
     description: "A GitHub token for API access."
