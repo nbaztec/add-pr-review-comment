@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: nbaztec/add-pr-review-comment@v1
         with:
-          message: |
+          comments: |
             [{"path":"lib/main.js","line":10,"text":"something was deleted","side":"RIGHT"},{"path":"lib/main.js","line":8,"text":"something was added","side":"LEFT"}]
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]' # The user.login for temporary GitHub tokens
